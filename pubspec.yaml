@@ -38,6 +38,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_native_splash: ^2.4.6
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -52,6 +53,15 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/appicon.png"
 
+flutter_native_splash:
+  android: true
+  ios: true
+  color: "#FFFFFF"
+  image: assets/appicon.png
+  android_12:
+    color: "#FFFFFF"
+    image: assets/appicon.png
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -64,7 +74,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
+    - assets/pokeball1.gif
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
