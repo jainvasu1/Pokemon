@@ -1,84 +1,198 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class HomeScreen extends StatelessWidget {
+import '../providers/pokemon_provider.dart';
+import '../widgets/search_bar_widget.dart';
+
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final TextEditingController searchController = TextEditingController();
+
+  bool showSavedOnly = false;
+
+  @override
   Widget build(BuildContext context) {
-    final SearchController controller = SearchController();
+    final provider = context.watch<PokemonProvider>();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xffF8F8FC),
 
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        title: Row(
-          children: [
-            Image.asset('assets/appicon.png', height: 30),
-            const SizedBox(width: 10),
-            const Text('Pokédex', style: TextStyle(color: Colors.black)),
-          ],
-        ),
-      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(22, 28, 22, 20),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            SearchAnchor.bar(
-              searchController: controller,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
 
-              barHintText: 'Search',
+            children: [
+              // TOP HEADER
+              Row(
+                children: [
+                  Image.asset("assets/appicon.png", width: 38, height: 38),
 
-              barLeading: const Icon(Icons.search, color: Colors.grey),
+                  const SizedBox(width: 10),
 
-              barBackgroundColor: MaterialStateProperty.all(Colors.white),
-              barElevation: MaterialStateProperty.all(3),
-
-              barShape: MaterialStateProperty.all(
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  const Text(
+                    "Pokédex",
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xff111827),
+                    ),
+                  ),
+                ],
               ),
 
-              barPadding: MaterialStateProperty.all(
-                const EdgeInsets.symmetric(horizontal: 16),
+              const SizedBox(height: 4),
+
+              Padding(
+                padding: const EdgeInsets.only(left: 42),
+
+                child: Text(
+                  "${provider.filteredPokemon.length} found",
+
+                  style: const TextStyle(
+                    color: Color(0xff9CA3AF),
+                    fontSize: 15,
+                  ),
+                ),
               ),
 
-              suggestionsBuilder:
-                  (BuildContext context, SearchController controller) {
-                    final input = controller.text.toLowerCase();
+              const SizedBox(height: 20),
 
-                    final List<String> pokemonList = [
-                      'pikachu',
-                      'bulbasaur',
-                      'charmander',
-                      'squirtle',
-                    ];
+              // SEARCH
+              SearchBarWidget(
+                controller: searchController,
+                onChanged: provider.searchPokemon,
+              ),
 
-                    final results = pokemonList
-                        .where((item) => item.contains(input))
-                        .toList();
+              const SizedBox(height: 18),
 
-                    return results.map((pokemon) {
-                      return ListTile(
-                        title: Text(pokemon),
+              // ALL SAVED
+              Container(
+                height: 54,
+
+                width: double.infinity,
+
+                padding: const EdgeInsets.all(5),
+
+                decoration: BoxDecoration(
+                  color: const Color(0xffE9EBF0),
+
+                  borderRadius: BorderRadius.circular(28),
+                ),
+
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(24),
+
                         onTap: () {
-                          controller.closeView(pokemon);
+                          setState(() {
+                            showSavedOnly = false;
+                          });
                         },
-                      );
-                    }).toList();
-                  },
-            ),
 
-            const SizedBox(height: 20),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
 
-            const Text(
-              'Welcome to the Pokédex!',
-              style: TextStyle(fontSize: 20),
-            ),
-          ],
+                          decoration: BoxDecoration(
+                            color: !showSavedOnly
+                                ? Colors.white
+                                : Colors.transparent,
+
+                            borderRadius: BorderRadius.circular(24),
+
+                            boxShadow: !showSavedOnly
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 8,
+                                      offset: Offset(0, 3),
+                                    ),
+                                  ]
+                                : [],
+                          ),
+
+                          child: const Center(
+                            child: Text(
+                              "All",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    Expanded(
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(24),
+
+                        onTap: () {
+                          setState(() {
+                            showSavedOnly = true;
+                          });
+                        },
+
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+
+                          decoration: BoxDecoration(
+                            color: showSavedOnly
+                                ? Colors.white
+                                : Colors.transparent,
+
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+
+                            children: const [
+                              Icon(
+                                Icons.favorite,
+                                size: 18,
+                                color: Color(0xff9CA3AF),
+                              ),
+
+                              SizedBox(width: 5),
+
+                              Text(
+                                "Saved",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xff9CA3AF),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 }
