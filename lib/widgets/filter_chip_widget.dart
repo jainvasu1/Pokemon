@@ -14,17 +14,22 @@ class FilterChipWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: ChoiceChip(
-        label: Text(
-          title,
-          style: TextStyle(color: selected ? Colors.white : Colors.black),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? Colors.black : const Color(0xffE9EBF0),
+          borderRadius: BorderRadius.circular(8),
         ),
-        selected: selected,
-        selectedColor: Colors.black,
-        backgroundColor: Colors.white,
-        onSelected: (_) => onTap(),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: selected ? Colors.white : Colors.black,
+          ),
+        ),
       ),
     );
   }
