@@ -356,6 +356,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+// Remove scroll listener and dispose controllers to prevent memory leaks
   @override
   void dispose() {
     scrollController

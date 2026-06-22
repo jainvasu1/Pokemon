@@ -62,7 +62,6 @@ class _DetailScreenState extends State<DetailScreen> {
       backgroundColor: Colors.grey[200],
       body: Column(
         children: [
-          // ✅ HEADER
           Container(
             width: double.infinity,
             padding: const EdgeInsets.only(top: 50, left: 16, right: 16),
@@ -76,7 +75,6 @@ class _DetailScreenState extends State<DetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ✅ TOP BAR
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -90,7 +88,6 @@ class _DetailScreenState extends State<DetailScreen> {
                     ),
                     Row(
                       children: [
-                        // ❤️ FAVORITE
                         InkWell(
                           onTap: () {
                             widget.onFavoriteToggle(); // home update
@@ -111,8 +108,6 @@ class _DetailScreenState extends State<DetailScreen> {
                             ),
                           ),
                         ),
-
-                        // 🔢 ID
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
@@ -131,9 +126,7 @@ class _DetailScreenState extends State<DetailScreen> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 20),
-
                 Text(
                   widget.name,
                   style: const TextStyle(
@@ -142,9 +135,7 @@ class _DetailScreenState extends State<DetailScreen> {
                     color: Colors.white,
                   ),
                 ),
-
                 const SizedBox(height: 6),
-
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -155,13 +146,10 @@ class _DetailScreenState extends State<DetailScreen> {
                   child: Text(widget.type,
                       style: const TextStyle(color: Colors.white)),
                 ),
-
                 const SizedBox(height: 20),
-
                 Center(
                   child: Image.network(widget.imageUrl, height: 140),
                 ),
-
                 const SizedBox(height: 20),
               ],
             ),
