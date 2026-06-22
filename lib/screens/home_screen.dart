@@ -202,6 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           children: [
             if (icon != null) ...[
+              //(...) it is a spread operator, which helps to insert all the elements from another list to current list.
               Icon(icon, size: 14),
               const SizedBox(width: 4),
             ],

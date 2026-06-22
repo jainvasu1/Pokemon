@@ -154,14 +154,11 @@ class _DetailScreenState extends State<DetailScreen> {
               ],
             ),
           ),
-
-          // ✅ BODY
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  // ✅ TABS
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.grey[300],
@@ -222,10 +219,7 @@ class _DetailScreenState extends State<DetailScreen> {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
-                  // ✅ SWITCH CONTENT
                   if (selectedTab == 0) ...[
                     Row(
                       children: [
