@@ -291,6 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return GridView.builder(
       controller: scrollController,
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.only(bottom: 20),
       itemCount: list.length + (provider.isLoadingMore ? 1 : 0),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -303,6 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (index == list.length) {
           return const Center(child: CircularProgressIndicator());
         }
+        // ... rest of your code remains the same
 
         final pokemon = list[index];
 
