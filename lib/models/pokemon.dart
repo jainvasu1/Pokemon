@@ -46,7 +46,11 @@ class Pokemon {
       types: (json['types'] as List)
           .map((e) => e['type']['name'] as String)
           .toList(),
+      // PokéAPI height is returned in decimetres (dm).
+// Example: 4 -> 0.4 m, 17 -> 1.7 m
       height: (json['height'] as num).toDouble() / 10,
+      // PokéAPI weight is returned in hectograms (hg).
+// Example: 60 -> 6.0 kg, 905 -> 90.5 kg
       weight: (json['weight'] as num).toDouble() / 10,
       abilities: (json['abilities'] as List)
           .map((e) => e['ability']['name'] as String)
