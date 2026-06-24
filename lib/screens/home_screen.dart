@@ -9,7 +9,6 @@ import 'package:pokemon_app/screens/detail_screen.dart';
 import 'package:pokemon_app/widgets/filter_chip_widget.dart';
 import 'package:pokemon_app/widgets/pokemon_card.dart';
 import 'package:pokemon_app/widgets/search_bar_widget.dart';
-import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -47,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final bloc = context.read<
         PokemonBloc>(); //bloc instance so i can send the action to bloc for fetching the data(it gives the bloc, it doesnot rebuild the ui(perfect for action like scrolling))
+    final state = bloc.state;
     final isNearBottom = scrollController.position.extentAfter < 300;
 
     if (isNearBottom && !bloc.state.isLoading) {
@@ -69,7 +69,21 @@ class _HomeScreenState extends State<HomeScreen> {
       // it specifies which bloc ans state listen the event
       builder: (context, state) {
         //a callback function taht gives you access to the current ui layout and current data(State) of the bloc.
+        if (state is PokemonLoading) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
+        if (state is PokemonError) {
+          return Scaffold(
+            body: Center(child: Text(state.message)),
+          );
+        }
+
+        if (state is PokemonLoaded) {
+          final
+        
         final visiblePokemon = state.filteredPokemon.where((pokemon) {
           return !showSavedOnly || favoriteIds.contains(pokemon.id);
         }).toList();
@@ -108,6 +122,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         );
+        }
+
+        return const SizedBox();
       },
     );
   }

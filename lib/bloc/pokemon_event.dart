@@ -1,21 +1,24 @@
-abstract class PokemonEvent {}
+import 'package:flutter/foundation.dart' show immutable;
 
-//  Initial load
-class FetchPokemon extends PokemonEvent {}
+@immutable
+abstract class PokemonEvent {
+  const PokemonEvent();
+}
 
-//Pagination
-class FetchMorePokemon extends PokemonEvent {}
+class FetchPokemon extends PokemonEvent {
+  const FetchPokemon();
+}
+
+class FetchMorePokemon extends PokemonEvent {
+  const FetchMorePokemon();
+}
 
 class SearchPokemon extends PokemonEvent {
   final String query;
-
-  SearchPokemon(this.query);
+  const SearchPokemon(this.query);
 }
 
-class FilterPokemonByType extends PokemonEvent {
+class FilterPokemonByType extends Pokemon {
   final String query;
-
-  FilterPokemonByType(this.query);
-
-  String? get type => null;
+  const FilterPokemonByType(this.query);
 }
