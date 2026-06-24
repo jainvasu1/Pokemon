@@ -1,7 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pokemon_app/models/pokemon.dart';
-import 'package:pokemon_app/providers/pokemon_provider.dart';
+import 'package:pokemon_app/bloc/pokemon_bloc.dart';
+import 'package:pokemon_app/bloc/pokemon_event.dart';
+import 'package:pokemon_app/bloc/pokemon_state.dart';
 import 'package:pokemon_app/screens/detail_screen.dart';
 import 'package:pokemon_app/widgets/filter_chip_widget.dart';
 import 'package:pokemon_app/widgets/pokemon_card.dart';
@@ -42,11 +45,13 @@ class _HomeScreenState extends State<HomeScreen> {
   void _loadMore() {
     if (!scrollController.hasClients) return;
 
-    final provider = context.read<PokemonProvider>();
+    final bloc = context.read<
+        PokemonBloc>(); //bloc instance so i can send the action to bloc for fetching the data(it gives the bloc, it doesnot rebuild the ui(perfect for action like scrolling))
     final isNearBottom = scrollController.position.extentAfter < 300;
 
-    if (isNearBottom && !provider.isLoading && !provider.isLoadingMore) {
-      provider.fetchPokemon();
+    if (isNearBottom && !bloc.state.isLoading) {
+      //here bloc.state.isloading checks the current state before doing anything because all data is inside the state.
+      bloc.add(FetchMorePokemon()); // for sending event.
     }
   }
 
@@ -60,40 +65,50 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<PokemonProvider>();
+    return BlocBuilder<PokemonBloc, PokemonState>(
+      // it specifies which bloc ans state listen the event
+      builder: (context, state) {
+        //a callback function taht gives you access to the current ui layout and current data(State) of the bloc.
 
-    final visiblePokemon = provider.filteredPokemon.where((pokemon) {
-      return !showSavedOnly || favoriteIds.contains(pokemon.id);
-    }).toList();
+        final visiblePokemon = state.filteredPokemon.where((pokemon) {
+          return !showSavedOnly || favoriteIds.contains(pokemon.id);
+        }).toList();
 
-    _sortPokemon(visiblePokemon);
+        _sortPokemon(visiblePokemon);
 
-    return Scaffold(
-      backgroundColor: const Color(0xffF8F8FC),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(visiblePokemon.length),
-              const SizedBox(height: 16),
-              SearchBarWidget(
-                controller: searchController,
-                onChanged: provider.searchPokemon,
+        return Scaffold(
+          backgroundColor: const Color(0xffF8F8FC),
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(visiblePokemon.length),
+                  const SizedBox(height: 16),
+                  SearchBarWidget(
+                    controller: searchController,
+                    onChanged: (value) {
+                      context.read<PokemonBloc>().add(
+                            SearchPokemon(
+                                value), //here trigger the event then bloc fetch the data from state.
+                          );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTopActions(state),
+                  const SizedBox(height: 12),
+                  _buildSortAndFilters(state),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: _buildPokemonGrid(state, visiblePokemon),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              _buildTopActions(provider),
-              const SizedBox(height: 12),
-              _buildSortAndFilters(provider),
-              const SizedBox(height: 12),
-              Expanded(
-                child: _buildPokemonGrid(provider, visiblePokemon),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -119,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTopActions(PokemonProvider provider) {
+  Widget _buildTopActions(PokemonState state) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -148,11 +163,11 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         GestureDetector(
           onTap: () {
-            if (provider.pokemon.isEmpty) return;
+            if (state.pokemonList.isEmpty) return;
 
             final random = Random();
             final randomPokemon =
-                provider.pokemon[random.nextInt(provider.pokemon.length)];
+                state.pokemonList[random.nextInt(state.pokemonList.length)];
 
             Navigator.push(
               context,
@@ -220,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSortAndFilters(PokemonProvider provider) {
+  Widget _buildSortAndFilters(PokemonState state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -266,8 +281,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.only(right: 6),
                 child: FilterChipWidget(
                   title: _capitalize(type),
-                  selected: provider.selectedType == type,
-                  onTap: () => provider.filterByType(type),
+                  selected: state.selectedType == type,
+                  onTap: () {
+                    context.read<PokemonBloc>().add(
+                          FilterPokemonByType(type),
+                        );
+                  },
                 ),
               );
             }).toList(),
@@ -277,8 +296,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildPokemonGrid(PokemonProvider provider, List<Pokemon> list) {
-    if (provider.isLoading && provider.pokemon.isEmpty) {
+  Widget _buildPokemonGrid(PokemonState state, List<Pokemon> list) {
+    if (state.isLoading && state.pokemonList.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -294,7 +313,7 @@ class _HomeScreenState extends State<HomeScreen> {
       controller: scrollController,
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.only(bottom: 20),
-      itemCount: list.length + (provider.isLoadingMore ? 1 : 0),
+      itemCount: list.length + (state.isLoading ? 1 : 0),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 10,
@@ -305,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (index == list.length) {
           return const Center(child: CircularProgressIndicator());
         }
-        // ... rest of your code remains the same
+        // rest of your code remains the same
 
         final pokemon = list[index];
 

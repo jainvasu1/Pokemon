@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'providers/pokemon_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'bloc/pokemon_bloc.dart';
+import 'services/pokemon_service.dart';
 import 'screens/splash_screen.dart';
 
 void main() {
@@ -16,11 +18,12 @@ class MyApp extends StatelessWidget {
       onTap: () {
         FocusManager.instance.primaryFocus?.unfocus();
       },
-      child: MultiProvider(
-        providers: [ChangeNotifierProvider(create: (_) => PokemonProvider())],
-        child: MaterialApp(
+      child: BlocProvider(
+        //BlocProvider is used to manages the creation and lifecycle automatic disposal of the bloc.
+        create: (_) => PokemonBloc(PokemonService()),
+        child: const MaterialApp(
           debugShowCheckedModeBanner: false,
-          home: const SplashScreen(),
+          home: SplashScreen(),
         ),
       ),
     );

@@ -21,7 +21,7 @@ class SearchBarWidget extends StatelessWidget {
       ),
       child: TextField(
         controller: controller,
-        onChanged: onChanged,
+        onChanged: (value) => onChanged(value),
         style: const TextStyle(fontSize: 14),
         decoration: const InputDecoration(
           border: InputBorder.none,
