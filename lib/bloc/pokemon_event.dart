@@ -1,13 +1,16 @@
-import 'package:flutter/foundation.dart' show immutable;
+import 'package:equatable/equatable.dart';
 
-@immutable
-abstract class PokemonEvent {
+abstract class PokemonEvent extends Equatable {
   const PokemonEvent();
+
+  @override
+  List<Object?> get props => [];
 }
 
 class FetchPokemon extends PokemonEvent {
   const FetchPokemon();
 }
+//Equatable compares objects using their properties (values) instead of memory addresses.
 
 class FetchMorePokemon extends PokemonEvent {
   const FetchMorePokemon();
@@ -16,9 +19,15 @@ class FetchMorePokemon extends PokemonEvent {
 class SearchPokemon extends PokemonEvent {
   final String query;
   const SearchPokemon(this.query);
+
+  @override
+  List<Object?> get props => [query]; //props tells Equatable which fields should be used for comparison.
 }
 
 class FilterPokemonByType extends Pokemon {
   final String query;
   const FilterPokemonByType(this.query);
+
+  @override
+  List<Object?> get props => [query];
 }
