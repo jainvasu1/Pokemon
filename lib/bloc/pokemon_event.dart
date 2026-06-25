@@ -21,13 +21,15 @@ class SearchPokemon extends PokemonEvent {
   const SearchPokemon(this.query);
 
   @override
-  List<Object?> get props => [query]; //props tells Equatable which fields should be used for comparison.
+  List<Object?> get props => [
+        query
+      ]; //props tells Equatable which fields should be used for comparison.
 }
 
-class FilterPokemonByType extends Pokemon {
-  final String query;
-  const FilterPokemonByType(this.query);
+class FilterPokemonByType extends PokemonEvent {
+  final String type;
+  const FilterPokemonByType(this.type);
 
   @override
-  List<Object?> get props => [query];
+  List<Object?> get props => [type];
 }

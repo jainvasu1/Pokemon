@@ -18,12 +18,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final TextEditingController searchController = TextEditingController();
-  final ScrollController scrollController = ScrollController();
+  final TextEditingController searchController =
+      TextEditingController(); // for controlling searchbar
+  final ScrollController scrollController =
+      ScrollController(); // for controlling scrolling
 
-  final Set<int> favoriteIds = {};
+  final Set<int> favoriteIds = {}; //Saved Pokémon IDs store karta ha
   bool showSavedOnly = false;
-  String selectedSort = 'Name';
+  String selectedSort = 'Name'; //sorting default
 
   static const _types = [
     'All',
@@ -46,12 +48,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final bloc = context.read<
         PokemonBloc>(); //bloc instance so i can send the action to bloc for fetching the data(it gives the bloc, it doesnot rebuild the ui(perfect for action like scrolling))
-    final state = bloc.state;
+    if (bloc.state is! PokemonLoaded) return;
+
+    final state = bloc.state as PokemonLoaded;
     final isNearBottom = scrollController.position.extentAfter < 300;
 
-    if (isNearBottom && !bloc.state.isLoading) {
+    if (isNearBottom && !state.isLoading) {
       //here bloc.state.isloading checks the current state before doing anything because all data is inside the state.
-      bloc.add(FetchMorePokemon()); // for sending event.
+      bloc.add(const FetchMorePokemon()); // for sending event.
     }
   }
 
@@ -82,46 +86,48 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         if (state is PokemonLoaded) {
-          final
-        
-        final visiblePokemon = state.filteredPokemon.where((pokemon) {
-          return !showSavedOnly || favoriteIds.contains(pokemon.id);
-        }).toList();
+          final bloc = context.read<PokemonBloc>();
 
-        _sortPokemon(visiblePokemon);
+          final visiblePokemon = bloc
+              .getFiltered(state)
+              .where((pokemon) =>
+                  !showSavedOnly || favoriteIds.contains(pokemon.id))
+              .toList();
 
-        return Scaffold(
-          backgroundColor: const Color(0xffF8F8FC),
-          body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(visiblePokemon.length),
-                  const SizedBox(height: 16),
-                  SearchBarWidget(
-                    controller: searchController,
-                    onChanged: (value) {
-                      context.read<PokemonBloc>().add(
-                            SearchPokemon(
-                                value), //here trigger the event then bloc fetch the data from state.
-                          );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  _buildTopActions(state),
-                  const SizedBox(height: 12),
-                  _buildSortAndFilters(state),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: _buildPokemonGrid(state, visiblePokemon),
-                  ),
-                ],
+          _sortPokemon(visiblePokemon);
+
+          return Scaffold(
+            backgroundColor: const Color(0xffF8F8FC),
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(visiblePokemon.length),
+                    const SizedBox(height: 16),
+                    SearchBarWidget(
+                      controller: searchController,
+                      onChanged: (value) {
+                        context.read<PokemonBloc>().add(
+                              SearchPokemon(
+                                  value), //here trigger the event then bloc fetch the data from state.
+                            );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTopActions(state),
+                    const SizedBox(height: 12),
+                    _buildSortAndFilters(state),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: _buildPokemonGrid(state, visiblePokemon),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
+          );
         }
 
         return const SizedBox();
@@ -180,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         GestureDetector(
           onTap: () {
-            if (state.pokemonList.isEmpty) return;
+            if (state is! PokemonLoaded || state.pokemonList.isEmpty) return;
 
             final random = Random();
             final randomPokemon =
@@ -297,8 +303,9 @@ class _HomeScreenState extends State<HomeScreen> {
               return Padding(
                 padding: const EdgeInsets.only(right: 6),
                 child: FilterChipWidget(
-                  title: _capitalize(type),
-                  selected: state.selectedType == type,
+                  title: type[0].toUpperCase() + type.substring(1),
+                  selected:
+                      state is PokemonLoaded && state.selectedType == type,
                   onTap: () {
                     context.read<PokemonBloc>().add(
                           FilterPokemonByType(type),
@@ -314,7 +321,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPokemonGrid(PokemonState state, List<Pokemon> list) {
-    if (state.isLoading && state.pokemonList.isEmpty) {
+    if (state is PokemonLoaded &&
+        state.isLoading &&
+        state.pokemonList.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -330,7 +339,8 @@ class _HomeScreenState extends State<HomeScreen> {
       controller: scrollController,
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.only(bottom: 20),
-      itemCount: list.length + (state.isLoading ? 1 : 0),
+      itemCount:
+          list.length + ((state is PokemonLoaded && state.isLoading) ? 1 : 0),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 10,
@@ -341,8 +351,6 @@ class _HomeScreenState extends State<HomeScreen> {
         if (index == list.length) {
           return const Center(child: CircularProgressIndicator());
         }
-        // rest of your code remains the same
-
         final pokemon = list[index];
 
         return PokemonCard(
@@ -370,10 +378,6 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
     );
-  }
-
-  String _capitalize(String value) {
-    return value[0].toUpperCase() + value.substring(1);
   }
 
   void _sortPokemon(List<Pokemon> pokemon) {
